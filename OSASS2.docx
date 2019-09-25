@@ -1,0 +1,637 @@
+--------------------------------------------------------FCFS---------------------------------------------------------------------------------------
+#include<iostream> 
+using namespace std; 
+
+void findWaitingTime(int processes[], int n, int bt[], int wt[]) 
+{ 
+	wt[0] = 0; 
+
+	for (int i = 1; i < n ; i++ ) 
+		wt[i] = bt[i-1] + wt[i-1] ; 
+} 
+
+void findTurnAroundTime( int processes[], int n, int bt[], int wt[], int tat[]) 
+{ 
+	for (int i = 0; i < n ; i++) 
+		tat[i] = bt[i] + wt[i]; 
+} 
+
+void findavgTime( int processes[], int n, int bt[]) 
+{ 
+	int wt[n], tat[n], total_wt = 0, total_tat = 0; 
+
+	findWaitingTime(processes, n, bt, wt); 
+
+	findTurnAroundTime(processes, n, bt, wt, tat); 
+
+	cout << "Processes "<< " Burst time "
+		<< " Waiting time " << " Turn around time\n"; 
+ 
+	for (int i=0; i<n; i++) 
+	{ 
+		total_wt = total_wt + wt[i]; 
+		total_tat = total_tat + tat[i]; 
+		cout << " " << i+1 << "\t\t" << bt[i] <<"\t "
+			<< wt[i] <<"\t\t " << tat[i] <<endl; 
+	} 
+
+	cout << "Average waiting time = "
+		<< (float)total_wt / (float)n; 
+	cout << "\nAverage turn around time = "
+		<< (float)total_tat / (float)n; 
+} 
+
+int main() 
+{ 
+	int processes[] = { 1, 2, 3}; 
+	int n = sizeof processes / sizeof processes[0]; 
+
+	int burst_time[] = {10, 5, 8}; 
+
+	findavgTime(processes, n, burst_time); 
+	return 0; 
+} 
+
+
+-------------------------------------------------FCFS ARRIVAL TIME----------------------------------------------------------------------------------
+#include<iostream> 
+using namespace std; 
+void findWaitingTime(int processes[], int n, int bt[], int wt[], int at[]) 
+{ 
+	int service_time[n]; 
+	service_time[0] = 0; 
+	wt[0] = 0; 
+
+	for (int i = 1; i < n ; i++) 
+	{ 
+		service_time[i] = service_time[i-1] + bt[i-1]; 
+
+		wt[i] = service_time[i] - at[i]; 
+ 
+		if (wt[i] < 0) 
+			wt[i] = 0; 
+	} 
+} 
+
+void findTurnAroundTime(int processes[], int n, int bt[], int wt[], int tat[]) 
+{  
+	for (int i = 0; i < n ; i++) 
+		tat[i] = bt[i] + wt[i]; 
+} 
+
+void findavgTime(int processes[], int n, int bt[], int at[]) 
+{ 
+	int wt[n], tat[n]; 
+
+	findWaitingTime(processes, n, bt, wt, at); 
+ 
+	findTurnAroundTime(processes, n, bt, wt, tat); 
+ 
+	cout << "Processes " << " Burst Time " << " Arrival Time "
+		<< " Waiting Time " << " Turn-Around Time "
+		<< " Completion Time \n"; 
+	int total_wt = 0, total_tat = 0; 
+	for (int i = 0 ; i < n ; i++) 
+	{ 
+		total_wt = total_wt + wt[i]; 
+		total_tat = total_tat + tat[i]; 
+		int compl_time = tat[i] + at[i]; 
+		cout << " " << i+1 << "\t\t" << bt[i] << "\t\t"
+			<< at[i] << "\t\t" << wt[i] << "\t\t "
+			<< tat[i] << "\t\t " << compl_time << endl; 
+	} 
+
+	cout << "Average waiting time = "
+		<< (float)total_wt / (float)n; 
+	cout << "\nAverage turn around time = "
+		<< (float)total_tat / (float)n; 
+} 
+
+int main() 
+{ 
+	int processes[] = {1, 2, 3}; 
+	int n = sizeof processes / sizeof processes[0]; 
+
+	int burst_time[] = {5, 9, 6}; 
+ 
+	int arrival_time[] = {0, 3, 6}; 
+
+	findavgTime(processes, n, burst_time, arrival_time); 
+
+	return 0; 
+} 
+
+-------------------------------------------------------SJF NON PRE-EMPTIVE------------------------------------------------------------------------------------- 
+#include<iostream> 
+using namespace std; 
+int mat[10][6]; 
+
+void swap(int *a, int *b) 
+{ 
+	int temp = *a; 
+	*a = *b; 
+	*b = temp; 
+} 
+
+void arrangeArrival(int num, int mat[][6]) 
+{ 
+	for(int i=0; i<num; i++) 
+	{ 
+		for(int j=0; j<num-i-1; j++) 
+		{ 
+			if(mat[j][1] > mat[j+1][1]) 
+			{ 
+				for(int k=0; k<5; k++) 
+				{ 
+					swap(mat[j][k], mat[j+1][k]); 
+				} 
+			} 
+		} 
+	} 
+} 
+
+void completionTime(int num, int mat[][6]) 
+{ 
+	int temp, val; 
+	mat[0][3] = mat[0][1] + mat[0][2]; 
+	mat[0][5] = mat[0][3] - mat[0][1]; 
+	mat[0][4] = mat[0][5] - mat[0][2]; 
+	
+	for(int i=1; i<num; i++) 
+	{ 
+		temp = mat[i-1][3]; 
+		int low = mat[i][2]; 
+		for(int j=i; j<num; j++) 
+		{ 
+			if(temp >= mat[j][1] && low >= mat[j][2]) 
+			{ 
+				low = mat[j][2]; 
+				val = j; 
+			} 
+		} 
+		mat[val][3] = temp + mat[val][2]; 
+		mat[val][5] = mat[val][3] - mat[val][1]; 
+		mat[val][4] = mat[val][5] - mat[val][2]; 
+		for(int k=0; k<6; k++) 
+		{ 
+			swap(mat[val][k], mat[i][k]); 
+		} 
+	} 
+} 
+
+int main() 
+{ 
+	int num, temp; 
+	
+	cout<<"Enter number of Process: "; 
+	cin>>num; 
+	
+	cout<<"...Enter the process ID...\n"; 
+	for(int i=0; i<num; i++) 
+	{ 
+		cout<<"...Process "<<i+1<<"...\n"; 
+		cout<<"Enter Process Id: "; 
+		cin>>mat[i][0]; 
+		cout<<"Enter Arrival Time: "; 
+		cin>>mat[i][1]; 
+		cout<<"Enter Burst Time: "; 
+		cin>>mat[i][2]; 
+	} 
+	
+	cout<<"Before Arrange...\n"; 
+	cout<<"Process ID\tArrival Time\tBurst Time\n"; 
+	for(int i=0; i<num; i++) 
+	{ 
+		cout<<mat[i][0]<<"\t\t"<<mat[i][1]<<"\t\t"<<mat[i][2]<<"\n"; 
+	} 
+	
+	arrangeArrival(num, mat); 
+	completionTime(num, mat); 
+	cout<<"Final Result...\n"; 
+	cout<<"Process ID\tArrival Time\tBurst Time\tWaiting Time\tTurnaround Time\n"; 
+	for(int i=0; i<num; i++) 
+	{ 
+		cout<<mat[i][0]<<"\t\t"<<mat[i][1]<<"\t\t"<<mat[i][2]<<"\t\t"<<mat[i][4]<<"\t\t"<<mat[i][5]<<"\n"; 
+	} 
+	return 0;
+} 
+
+---------------------------------------------------SJF PRE-EMPTIVE--------------------------------------------------------------
+
+#include <bits/stdc++.h> 
+using namespace std; 
+
+struct Process { 
+	int pid;  
+	int bt;  
+	int art; 
+}; 
+
+void findWaitingTime(Process proc[], int n, int wt[]) 
+{ 
+	int rt[n]; 
+
+	for (int i = 0; i < n; i++) 
+		rt[i] = proc[i].bt; 
+
+	int complete = 0, t = 0, minm = INT_MAX; 
+	int shortest = 0, finish_time; 
+	bool check = false; 
+
+	while (complete != n) { 
+
+		for (int j = 0; j < n; j++) { 
+			if ((proc[j].art <= t) && 
+			(rt[j] < minm) && rt[j] > 0) { 
+				minm = rt[j]; 
+				shortest = j; 
+				check = true; 
+			} 
+		} 
+
+		if (check == false) { 
+			t++; 
+			continue; 
+		} 
+ 
+		rt[shortest]--; 
+
+		minm = rt[shortest]; 
+		if (minm == 0) 
+			minm = INT_MAX; 
+
+		if (rt[shortest] == 0) { 
+
+			complete++; 
+			check = false; 
+
+			finish_time = t + 1; 
+ 
+			wt[shortest] = finish_time - proc[shortest].bt - proc[shortest].art; 
+
+			if (wt[shortest] < 0) 
+				wt[shortest] = 0; 
+		} 
+		
+		t++; 
+	} 
+} 
+
+void findTurnAroundTime(Process proc[], int n, int wt[], int tat[]) 
+{  
+	for (int i = 0; i < n; i++) 
+		tat[i] = proc[i].bt + wt[i]; 
+} 
+
+void findavgTime(Process proc[], int n) 
+{ 
+	int wt[n], tat[n], total_wt = 0, total_tat = 0; 
+
+	findWaitingTime(proc, n, wt); 
+
+	findTurnAroundTime(proc, n, wt, tat); 
+ 
+	cout << "Processes "<< " Burst time "<< " Waiting time "<< " Turn around time\n"; 
+
+	for (int i = 0; i < n; i++) { 
+		total_wt = total_wt + wt[i]; 
+		total_tat = total_tat + tat[i]; 
+		cout << " " << proc[i].pid << "\t\t"<< proc[i].bt << "\t\t " << wt[i] << "\t\t " << tat[i] << endl; 
+	} 
+
+	cout << "\nAverage waiting time = "
+		<< (float)total_wt / (float)n; 
+	cout << "\nAverage turn around time = "
+		<< (float)total_tat / (float)n; 
+} 
+
+int main() 
+{ 
+	Process proc[] = { { 1, 6, 1 }, { 2, 8, 1 }, { 3, 7, 2 }, { 4, 3, 3 } }; 
+	int n = sizeof(proc) / sizeof(proc[0]); 
+
+	findavgTime(proc, n); 
+	return 0; 
+} 
+
+-----------------------------------PRIORITY NON PRE-EMPTIVE-------------------------------------------------------------------
+
+#include<bits/stdc++.h> 
+using namespace std; 
+
+struct Process 
+{ 
+	int pid;  
+	int bt;  
+	int priority;  
+}; 
+ 
+bool comparison(Process a, Process b) 
+{ 
+	return (a.priority > b.priority); 
+} 
+
+void findWaitingTime(Process proc[], int n, int wt[]) 
+{ 
+	wt[0] = 0; 
+
+	for (int i = 1; i < n ; i++ ) 
+		wt[i] = proc[i-1].bt + wt[i-1] ; 
+} 
+
+void findTurnAroundTime( Process proc[], int n, int wt[], int tat[]) 
+{ 
+	for (int i = 0; i < n ; i++) 
+		tat[i] = proc[i].bt + wt[i]; 
+} 
+
+void findavgTime(Process proc[], int n) 
+{ 
+	int wt[n], tat[n], total_wt = 0, total_tat = 0; 
+
+	findWaitingTime(proc, n, wt); 
+ 
+	findTurnAroundTime(proc, n, wt, tat); 
+ 
+	cout << "\nProcesses "<< " Burst time "<< " Waiting time " << " Turn around time\n"; 
+
+	for (int i=0; i<n; i++) 
+	{ 
+		total_wt = total_wt + wt[i]; 
+		total_tat = total_tat + tat[i]; 
+		cout << " " << proc[i].pid << "\t\t"<< proc[i].bt << "\t " << wt[i] << "\t\t " << tat[i] <<endl; 
+	} 
+
+	cout << "\nAverage waiting time = "<< (float)total_wt / (float)n; 
+	cout << "\nAverage turn around time = "<< (float)total_tat / (float)n; 
+} 
+
+void priorityScheduling(Process proc[], int n) 
+{ 
+	sort(proc, proc + n, comparison); 
+
+	cout<< "Order in which processes gets executed \n"; 
+	for (int i = 0 ; i < n; i++) 
+		cout << proc[i].pid <<" " ; 
+
+	findavgTime(proc, n); 
+} 
+
+int main() 
+{ 
+	Process proc[] = {{1, 10, 2}, {2, 5, 0}, {3, 8, 1}}; 
+	int n = sizeof proc / sizeof proc[0]; 
+	priorityScheduling(proc, n); 
+	return 0; 
+} 
+
+-------------------------------------------------PRIORITY PRE-EMPTIVE---------------------------------------------------------------------------
+
+#include <bits/stdc++.h> 
+using namespace std; 
+
+struct Process { 
+	int processID; 
+	int burstTime; 
+	int tempburstTime; 
+	int responsetime; 
+	int arrivalTime; 
+	int priority; 
+	int outtime; 
+	int intime; 
+}; 
+
+void insert(Process Heap[], Process value, int* heapsize, int* currentTime) 
+{ 
+	int start = *heapsize, i; 
+	Heap[*heapsize] = value; 
+	if (Heap[*heapsize].intime == -1) 
+		Heap[*heapsize].intime = *currentTime; 
+	++(*heapsize); 
+
+	while (start != 0 && Heap[(start - 1) / 2].priority > Heap[start].priority) { 
+		Process temp = Heap[(start - 1) / 2]; 
+		Heap[(start - 1) / 2] = Heap[start]; 
+		Heap[start] = temp; 
+		start = (start - 1) / 2; 
+	} 
+} 
+
+void order(Process Heap[], int* heapsize, int start) 
+{ 
+	int smallest = start; 
+	int left = 2 * start + 1; 
+	int right = 2 * start + 2; 
+	if (left < *heapsize && Heap[left].priority < Heap[smallest].priority) 
+		smallest = left; 
+	if (right < *heapsize && Heap[right].priority < Heap[smallest].priority) 
+		smallest = right; 
+
+	if (smallest != start) { 
+		Process temp = Heap[smallest]; 
+		Heap[smallest] = Heap[start]; 
+		Heap[start] = temp; 
+		order(Heap, heapsize, smallest); 
+	} 
+} 
+
+Process extractminimum(Process Heap[], int* heapsize, int* currentTime) 
+{ 
+	Process min = Heap[0]; 
+	if (min.responsetime == -1) 
+		min.responsetime = *currentTime - min.arrivalTime; 
+	--(*heapsize); 
+	if (*heapsize >= 1) { 
+		Heap[0] = Heap[*heapsize]; 
+		order(Heap, heapsize, 0); 
+	} 
+	return min; 
+} 
+
+bool compare(Process p1, Process p2) 
+{ 
+	return (p1.arrivalTime < p2.arrivalTime); 
+} 
+
+void scheduling(Process Heap[], Process array[], int n, 
+				int* heapsize, int* currentTime) 
+{ 
+	if (heapsize == 0) 
+		return; 
+
+	Process min = extractminimum(Heap, heapsize, currentTime); 
+	min.outtime = *currentTime + 1; 
+	--min.burstTime; 
+	printf("process id = %d current time = %d\n", 
+		min.processID, *currentTime); 
+
+	if (min.burstTime > 0) { 
+		insert(Heap, min, heapsize, currentTime); 
+		return; 
+	} 
+
+	for (int i = 0; i < n; i++) 
+		if (array[i].processID == min.processID) { 
+			array[i] = min; 
+			break; 
+		} 
+} 
+
+void priority(Process array[], int n) 
+{ 
+	sort(array, array + n, compare); 
+
+	int totalwaitingtime = 0, totalbursttime = 0, 
+		totalturnaroundtime = 0, i, insertedprocess = 0, 
+		heapsize = 0, currentTime = array[0].arrivalTime, 
+		totalresponsetime = 0; 
+
+	Process Heap[4 * n]; 
+
+	for (int i = 0; i < n; i++) { 
+		totalbursttime += array[i].burstTime; 
+		array[i].tempburstTime = array[i].burstTime; 
+	} 
+
+	do { 
+		if (insertedprocess != n) { 
+			for (i = 0; i < n; i++) { 
+				if (array[i].arrivalTime == currentTime) { 
+					++insertedprocess; 
+					array[i].intime = -1; 
+					array[i].responsetime = -1; 
+					insert(Heap, array[i], &heapsize, ¤tTime); 
+				} 
+			} 
+		} 
+		scheduling(Heap, array, n, &heapsize, ¤tTime); 
+		++currentTime; 
+		if (heapsize == 0 && insertedprocess == n) 
+			break; 
+	} while (1); 
+
+	for (int i = 0; i < n; i++) { 
+		totalresponsetime += array[i].responsetime; 
+		totalwaitingtime += (array[i].outtime - array[i].intime - array[i].tempburstTime); 
+		totalbursttime += array[i].burstTime; 
+	} 
+	printf("Average waiting time = %f\n", 
+		((float)totalwaitingtime / (float)n)); 
+	printf("Average response time =%f\n", 
+		((float)totalresponsetime / (float)n)); 
+	printf("Average turn around time = %f\n", 
+		((float)(totalwaitingtime + totalbursttime) / (float)n)); 
+} 
+
+int main() 
+{ 
+	int n, i; 
+	Process a[5]; 
+	a[0].processID = 1; 
+	a[0].arrivalTime = 4; 
+	a[0].priority = 2; 
+	a[0].burstTime = 6; 
+	a[1].processID = 4; 
+	a[1].arrivalTime = 5; 
+	a[1].priority = 1; 
+	a[1].burstTime = 3; 
+	a[2].processID = 2; 
+	a[2].arrivalTime = 5; 
+	a[2].priority = 3; 
+	a[3].burstTime = 7; 
+	a[3].processID = 3; 
+	a[3].arrivalTime = 1; 
+	a[3].priority = 4; 
+	a[3].burstTime = 2; 
+	a[4].processID = 5; 
+	a[4].arrivalTime = 3; 
+	a[4].priority = 5; 
+	a[4].burstTime = 4; 
+	priority(a, 5); 
+	return 0; 
+} 
+--------------------------------------------------ROUND ROBIN---------------------------------------------------------------------
+
+#include<iostream> 
+using namespace std; 
+
+void findWaitingTime(int processes[], int n, int bt[], int wt[], int quantum) 
+{ 
+	int rem_bt[n]; 
+	for (int i = 0 ; i < n ; i++) 
+		rem_bt[i] = bt[i]; 
+
+	int t = 0; 
+
+	while (1) 
+	{ 
+		bool done = true; 
+
+		for (int i = 0 ; i < n; i++) 
+		{ 
+			if (rem_bt[i] > 0) 
+			{ 
+				done = false;  
+
+				if (rem_bt[i] > quantum) 
+				{ 
+					t += quantum; 
+
+					rem_bt[i] -= quantum; 
+				} 
+
+				else
+				{ 
+					t = t + rem_bt[i]; 
+
+					wt[i] = t - bt[i]; 
+
+					rem_bt[i] = 0; 
+				} 
+			} 
+		} 
+
+		if (done == true) 
+		break; 
+	} 
+} 
+
+void findTurnAroundTime(int processes[], int n, int bt[], int wt[], int tat[]) 
+{ 
+	for (int i = 0; i < n ; i++) 
+		tat[i] = bt[i] + wt[i]; 
+} 
+
+void findavgTime(int processes[], int n, int bt[], int quantum) 
+{ 
+	int wt[n], tat[n], total_wt = 0, total_tat = 0; 
+
+	findWaitingTime(processes, n, bt, wt, quantum); 
+
+	findTurnAroundTime(processes, n, bt, wt, tat); 
+
+	cout << "Processes "<< " Burst time "<< " Waiting time " << " Turn around time\n"; 
+ 
+	for (int i=0; i<n; i++) 
+	{ 
+		total_wt = total_wt + wt[i]; 
+		total_tat = total_tat + tat[i]; 
+		cout << " " << i+1 << "\t\t" << bt[i] <<"\t "<< wt[i] <<"\t\t " << tat[i] <<endl; 
+	} 
+
+	cout << "Average waiting time = "<< (float)total_wt / (float)n; 
+	cout << "\nAverage turn around time = "<< (float)total_tat / (float)n; 
+} 
+
+int main() 
+{ 
+	int processes[] = { 1, 2, 3}; 
+	int n = sizeof processes / sizeof processes[0]; 
+
+	int burst_time[] = {10, 5, 8}; 
+
+	int quantum = 2; 
+	findavgTime(processes, n, burst_time, quantum); 
+	return 0; 
+} 
+

